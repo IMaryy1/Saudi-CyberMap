@@ -2,8 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<title>الخريطة السيبرانية للمملكة</title>
-
+<title>الخريطة الرقمية للمملكة</title>
 <style>
 body{
     margin:0;
@@ -11,19 +10,48 @@ body{
     background:#f5efe6;
     color:#3e2f1c;
     text-align:center;
+    overflow-x:hidden;
 }
 
+/* عنوان الصفحة */
 h1{
     padding:20px;
 }
 
+/* الخلفية التقنية (نقاط متحركة) */
+.background{
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    z-index:-1;
+    overflow:hidden;
+}
+
+.dot{
+    position:absolute;
+    width:12px;
+    height:12px;
+    background:rgba(107,79,42,0.3);
+    border-radius:50%;
+    animation: float 20s linear infinite;
+}
+
+@keyframes float{
+    0%{transform:translateY(0) translateX(0);}
+    50%{transform:translateY(200px) translateX(100px);}
+    100%{transform:translateY(-50px) translateX(-150px);}
+}
+
+/* الخريطة */
 .map-container{
     width:80%;
     margin:auto;
+    position:relative;
 }
 
-/* شكل المناطق */
-svg path, svg circle{
+svg circle{
     fill:#d6c2a1;
     stroke:#6b4f2a;
     stroke-width:2;
@@ -31,11 +59,15 @@ svg path, svg circle{
     transition:0.3s;
 }
 
-svg path:hover, svg circle:hover{
+svg circle:hover{
     fill:#b89a6a;
 }
 
-/* المودال */
+svg text{
+    font-size:14px;
+}
+
+/* مودال التحدي */
 .modal{
     position:fixed;
     inset:0;
@@ -43,104 +75,125 @@ svg path:hover, svg circle:hover{
     display:none;
     justify-content:center;
     align-items:center;
+    z-index:10;
 }
 
 .modal-content{
     background:white;
     padding:25px;
     border-radius:12px;
-    width:350px;
+    width:400px;
     box-shadow:0 10px 30px rgba(0,0,0,0.2);
+    text-align:right;
 }
 
-button{
+.modal-content button{
     background:#6b4f2a;
     color:white;
     border:none;
     padding:10px 18px;
     border-radius:8px;
     cursor:pointer;
+    margin:5px;
 }
+
 </style>
 </head>
-
 <body>
 
 <h1>الخريطة الرقمية للمملكة 🇸🇦</h1>
-<p>اضغطي على المنطقة لاكتشاف التجربة السيبرانية</p>
+<p>اضغطي على المنطقة لاكتشاف التحدي السيبراني!</p>
+
+<!-- الخلفية -->
+<div class="background" id="background"></div>
 
 <div class="map-container">
-
-<!-- مبدئيًا نستخدم دوائر كمواقع المدن -->
-<!-- لاحقًا نبدلها بخريطة SVG حقيقية -->
-
 <svg viewBox="0 0 600 400" width="100%">
+    <!-- المدن -->
+    <circle cx="300" cy="200" r="20" onclick="openChallenge('riyadh')"/>
+    <text x="300" y="240" text-anchor="middle">الرياض</text>
 
-<!-- الرياض -->
-<circle cx="300" cy="200" r="20" onclick="openModal('riyadh')"/>
-<text x="300" y="240" text-anchor="middle">الرياض</text>
+    <circle cx="180" cy="220" r="18" onclick="openChallenge('jeddah')"/>
+    <text x="180" y="255" text-anchor="middle">جدة</text>
 
-<!-- جدة -->
-<circle cx="180" cy="220" r="18" onclick="openModal('jeddah')"/>
-<text x="180" y="255" text-anchor="middle">جدة</text>
+    <circle cx="200" cy="180" r="16" onclick="openChallenge('makkah')"/>
+    <text x="200" y="160" text-anchor="middle">مكة</text>
 
-<!-- مكة -->
-<circle cx="200" cy="180" r="16" onclick="openModal('makkah')"/>
-<text x="200" y="160" text-anchor="middle">مكة</text>
+    <circle cx="200" cy="120" r="16" onclick="openChallenge('madinah')"/>
+    <text x="200" y="100" text-anchor="middle">المدينة</text>
 
-<!-- المدينة -->
-<circle cx="200" cy="120" r="16" onclick="openModal('madinah')"/>
-<text x="200" y="100" text-anchor="middle">المدينة</text>
-
-<!-- الشرقية -->
-<circle cx="430" cy="210" r="20" onclick="openModal('sharqiyah')"/>
-<text x="430" y="245" text-anchor="middle">الشرقية</text>
-
+    <circle cx="430" cy="210" r="20" onclick="openChallenge('sharqiyah')"/>
+    <text x="430" y="245" text-anchor="middle">الشرقية</text>
 </svg>
 </div>
 
-
-<!-- المودال -->
+<!-- مودال -->
 <div class="modal" id="modal">
     <div class="modal-content">
         <h2 id="title"></h2>
         <p id="content"></p>
-        <button onclick="closeModal()">إغلاق</button>
+        <button onclick="startChallenge()">نعم</button>
+        <button onclick="closeModal()">لا</button>
     </div>
 </div>
 
 <script>
+// إنشاء نقاط خلفية متحركة
+for(let i=0;i<40;i++){
+    let dot = document.createElement("div");
+    dot.classList.add("dot");
+    dot.style.top = Math.random()*100+"%";
+    dot.style.left = Math.random()*100+"%";
+    dot.style.width = (8 + Math.random()*8) + "px";
+    dot.style.height = dot.style.width;
+    dot.style.animationDuration = (15 + Math.random()*15) + "s";
+    document.getElementById("background").appendChild(dot);
+}
+
+// بيانات المدن والتحديات
 const data = {
     riyadh:{
         title:"الرياض",
-        text:"عاصمة الدولة الحديثة. التحدي: هل تستطيع تمييز رسالة تصيد؟"
+        content:"تحدي: تمييز رسالة تصيد البريد الإلكتروني.",
+        page:"challenges/riyadh.html"
     },
     jeddah:{
         title:"جدة",
-        text:"بوابة التجارة للمملكة. التحدي: اختر الموقع الآمن للتسوق."
+        content:"تحدي: اختر الموقع الآمن للتسوق.",
+        page:"challenges/jeddah.html"
     },
     makkah:{
         title:"مكة المكرمة",
-        text:"قلب العالم الإسلامي. التحدي: كيف تحمي حسابك من الاختراق؟"
+        content:"تحدي: حماية الحساب الشخصي.",
+        page:"challenges/makkah.html"
     },
     madinah:{
         title:"المدينة المنورة",
-        text:"مدينة التاريخ والرسالة. التحدي: اكتشف الرابط المزيف."
+        content:"تحدي: اكتشاف الرابط المزيف.",
+        page:"challenges/madinah.html"
     },
     sharqiyah:{
         title:"المنطقة الشرقية",
-        text:"مركز الطاقة والاقتصاد. التحدي: هل بياناتك محمية بكلمة مرور قوية؟"
+        content:"تحدي: التحقق من قوة كلمة المرور.",
+        page:"challenges/sharqiyah.html"
     }
-}
+};
 
-function openModal(city){
+let currentCity = "";
+
+function openChallenge(city){
+    currentCity = city;
+    document.getElementById("title").innerText = data[city].title;
+    document.getElementById("content").innerText = data[city].content;
     document.getElementById("modal").style.display="flex";
-    document.getElementById("title").innerText=data[city].title;
-    document.getElementById("content").innerText=data[city].text;
 }
 
 function closeModal(){
     document.getElementById("modal").style.display="none";
+}
+
+function startChallenge(){
+    window.location.href = data[currentCity].page;
 }
 </script>
 
